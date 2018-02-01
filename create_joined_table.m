@@ -1,5 +1,5 @@
-code_file = 'Cantometrics_Coding_Data_nasality.csv';
-canto_file = 'CantoMetadata_MasterGeog_data_1.xlsx';
+code_file = '../data/Cantometrics_Coding_Data_nasality.csv';
+canto_file = '../data/CantoMetadata_MasterGeog_data_1.xlsx';
 
 code_table = readtable(code_file);
 [~, text] = xlsread(canto_file, '1:1');
