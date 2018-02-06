@@ -23,13 +23,38 @@ end
 %}
 
 for i = 1:37
+    f_name = strcat('../data/table_', num2str(i), '.xlsx');
+    p_name = strcat('../data/CantoVariable', num2str(i));
+    % Create FormatTemplate object, specify table format
+    ft = ModelAdvisor.FormatTemplate('TableTemplate');
+    % Add information to the table
+    setTableTitle(ft, p_name);
+    setColTitles(ft, text);
+    
     var_name = cellstr(canto_var(i));   
-    vars = table{rows,var_name};
-    codings = unique(vars);
 
+    invalid_code = 0;
+    for j = 1:num_rows
+        splitted = split(vars(j), ' ');
+        if length(splitted) == 1
+            if str2double(vars(j)) < 1 || str2double(vars(j)) > 13
+                invalid_code = invalid_code + 1;
+            else
+                addRow(ft, table2cell(table(j, :)));
+            end            
+        end        
+    end
+    
+    t = cell2table(ft.TableInfo);
+    t.Properties.VariableNames = text;
+    writetable(t, char(f_name));
+       
+    vars = t{rows,var_name};
+    codings = unique(vars);
     count = categorical(vars, codings);
     histogram(count);
-    title(var_name);
-   
-    print(gcf, char(var_name),'-dpng');
+    title(var_name);   
+    print(gcf, char(p_name),'-dpng'); 
+    
+    disp([i, invalid_code]);
 end
