@@ -10,20 +10,13 @@ canto_var = ["CANTO_VAR_1", "CANTO_VAR_2", "CANTO_VAR_3", "CANTO_VAR_4", "CANTO_
 
 valid_code = ["1 2 4 5 6 7 8 9 10 11 12 13", "1 2 3 5 6 8 9 12 13", "1 2 4 5 6 7 8 9 10 11 12 13", "1 4 7 10 13", "1 4 7 10 13", "1 4 7 10 13", "1 4 7 10 13","1 4 7 10 13", "1 4 7 10 13", "1 4 7 10 13", "1 3 6 9 11 13", "1 3 5 7 9 11 13", "1 3 6 9 11 13", "1 3 5 7 9 11 13", "1 5 9 13", "1 2 3 4 5 6 7 8 9 10 11 12 13", "1 4 7 10 13", "1 3 5 6 8 9 11 13", "1 4 9 11 13", "1 4 7 10 13", "1 4 7 10 13", "1 3 6 8 10 13", "1 4 7 10 13", "1 3 5 9 11 13", "1 4 7 10 13", "1 5 9 13", "1 5 9 13", "1 5 9 13", "1 7 13", "1 7 13", "1 7 13", "1 4 7 10 13", "1 3 6 8 10 13", "1 4 7 10 13", "1 4 7 10 13", "1 4 7 10 13", "1 4 7 10 13"];
 
-% count how many zeros in each coding line
-%{
-count = 0;
-for i = 1:num_rows
-    if strcmp(vars(i),'0')
-        disp(i)
-        count = count + 1;
-    end
-end
-%}
-
 numrows = height(table);
 row = 1:numrows;
 
+error_report = ModelAdvisor.FormatTemplate('TableTemplate');
+setTableTitle(error_report, 'error_report_table');
+setColTitles(error_report, cellstr(["var","row#","invalid_code","count"]));
+report_file = 'error_report_file.xlsx';
 
 for i = 1:37
     f_name = strcat('../data/table_', num2str(i), '.xlsx');
@@ -37,27 +30,72 @@ for i = 1:37
     
     v_code = valid_code(i);
     v_code = split(v_code, ' ');
-    disp(v_code)
+    %disp(v_code)
     
-    var_name = cellstr(canto_var(i));   
+    var_name = cellstr(canto_var(i));
     vars = table{row,var_name};
     
     invalid_code = 0;
     for j = 1:numrows
         splitted = split(vars(j), ' ');
         if length(splitted) == 1
-            if str2double(vars(j)) < 1 || str2double(vars(j)) > 13
+            mark = 0;
+            for k = 1:length(v_code)
+                if str2double(splitted) == str2double(v_code(k))
+                    addRow(ft, table2cell(table(j, :)));
+                    mark = 1;
+                    break
+                end
+            end  
+            if mark ~= 1
+                invalid_code = invalid_code + 1; 
+                r = cellstr([num2str(i); num2str(j); splitted; num2str(invalid_code)]);
+                addRow(error_report, r')
+            end
+            
+        elseif length(splitted) == 3
+            mark_1 = 0;
+            code1 = splitted(1);
+            code2 = splitted(3);
+            for k = 1:length(v_code)
+                if str2double(code1)==str2double(v_code(k))
+                    mark_1 = mark_1 + 1;
+                elseif str2double(code2)==str2double(v_code(k))
+                    mark_1 = mark_1 + 1;
+                end
+            end
+            if mark_1 ~= 2
                 invalid_code = invalid_code + 1;
-            else
-                addRow(ft, table2cell(table(j, :)));
-            end            
+                r = cellstr([num2str(i); num2str(j); cellstr(strcat(splitted)); num2str(invalid_code)]);
+                addRow(error_report, r')
+            end
+                
+        else 
+            mark = 0;
+            code1 = splitted(1);
+            code2 = splitted(3);
+            code3 = splitted(5);
+            for k = 1:length(v_code)
+                if str2double(code1)==str2double(v_code(k))
+                    mark = mark + 1;
+                elseif str2double(code2)==str2double(v_code(k))
+                    mark = mark + 1;
+                elseif str2double(code3)==str2double(v_code(k))
+                    mark = mark + 1;
+                end
+            end
+            if mark ~= 3
+                invalid_code = invalid_code + 1;
+                r = cellstr([num2str(i); num2str(j); cellstr(strcat(splitted)); num2str(invalid_code)]);
+                addRow(error_report, r')
+            end
         end        
     end
-    
+
     t = cell2table(ft.TableInfo);
     t.Properties.VariableNames = text;
     writetable(t, char(f_name));
-    
+     
     num_rows = height(t);
     rows = 1:num_rows;
     var = t{rows,var_name};
@@ -65,7 +103,7 @@ for i = 1:37
 
     codings = sort(str2double(codings));
     codings = cellstr(num2str(codings));
-    disp(codings);
+    %disp(codings);
     count = categorical(var, codings);
     histogram(count);
     title(var_name);   
@@ -74,3 +112,7 @@ for i = 1:37
     disp([i, invalid_code]);
     
 end
+error_table = cell2table(error_report.TableInfo);
+error_table.Properties.VariableNames = cellstr(["canto_var","row_number","invalid_code","count"]);
+writetable(error_table, char(report_file));
+
