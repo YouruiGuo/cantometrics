@@ -49,7 +49,8 @@ for i = 1:37
             end  
             if mark ~= 1
                 invalid_code = invalid_code + 1; 
-                r = cellstr([num2str(i); num2str(j); splitted; num2str(invalid_code)]);
+                disp(table{j,{'Coding_ID'}})
+                r = cellstr([num2str(i); num2str(table{j,{'Coding_ID'}}); splitted; num2str(invalid_code)]);
                 addRow(error_report, r')
             end
             
@@ -66,7 +67,7 @@ for i = 1:37
             end
             if mark_1 ~= 2
                 invalid_code = invalid_code + 1;
-                r = cellstr([num2str(i); num2str(j); cellstr(strcat(splitted)); num2str(invalid_code)]);
+                r = cellstr([num2str(i); num2str(table{j,{'Coding_ID'}}); cellstr(strcat(splitted)); num2str(invalid_code)]);
                 addRow(error_report, r')
             end
                 
@@ -86,7 +87,7 @@ for i = 1:37
             end
             if mark ~= 3
                 invalid_code = invalid_code + 1;
-                r = cellstr([num2str(i); num2str(j); cellstr(strcat(splitted)); num2str(invalid_code)]);
+                r = cellstr([num2str(i); num2str(table{j,{'Coding_ID'}}); cellstr(strcat(splitted)); num2str(invalid_code)]);
                 addRow(error_report, r')
             end
         end        
